@@ -37,6 +37,7 @@ def clamp(min_value, max_value, value):
     return value
 
 
+# TODO: Parameterize over required values to enable different "modes" (color, shape, size, etc)
 class AudioBar:
     def __init__(self, x, y, freq, color, width=50, min_height=10, max_height=100, min_decibel=-80, max_decibel=0):
         self.x, self.y, self.freq = x, y, freq
@@ -70,13 +71,14 @@ def visualize_song(song_name):
     global sr
     x, sr = librosa.load(os.path.join(INPUT_DIRECTORY, song_name), sr=sr)
 
-    # === Output Spectograms ===
+    # === Retrieve Features Used for Visualizer ===
     window = numpy.hanning(window_size)
     stft = librosa.core.spectrum.stft(x, n_fft=window_size, hop_length=hop_length, window=window)
     out = 2 * numpy.abs(stft) / numpy.sum(window)
 
     spectrogram = librosa.amplitude_to_db(out, ref=numpy.max)
 
+    # TODO: Incorporate these into color/shape/size and create different "styles" or "modes"
     spectral_centroid = librosa.feature.spectral_centroid(x, sr=sr)
     spectral_rolloff = librosa.feature.spectral_rolloff(x, sr=sr)
     zero_crossing_rate = librosa.feature.zero_crossing_rate(x)
