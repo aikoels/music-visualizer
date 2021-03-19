@@ -8,7 +8,7 @@ Theresa Pelosi,
 Matthew Ferber,
 Paul Rhee
  
-#### Installing the Visualizer
+### Installing the Visualizer
 This program has only been tested on Windows, but it is expected to 
 work on Mac or Unix.
 
@@ -41,7 +41,7 @@ folder, and run: `python3 visualizer.py`
 
 A PyGame window should appear with your visualizations.
 
-#### Using the Visualizer
+### Using the Visualizer
 Controls:
 - You can quit at any time and skip the rest of the songs by closing the window.
 - You can switch between color profiles using 1 (default) or 2 (desert).
