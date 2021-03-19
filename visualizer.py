@@ -146,6 +146,8 @@ def visualize_song(song_name):
         for event in pygame.event.get():
             # Key Press
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:  # Skip This Song
+                    playing = False
                 if event.key == pygame.K_1:  # 1 - Default Color Palette
                     color = default_palette
                 if event.key == pygame.K_2:  # 2 - Desert Color Palette
