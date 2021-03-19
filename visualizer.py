@@ -6,8 +6,6 @@ import platform
 import pathlib
 
 '''
-1. Window name = song name
-2. Next song play in same window
 2. Zerocrossing/BPM for color changes
 Separate percussive and harmonic elements in a piece
 '''
@@ -15,8 +13,19 @@ Separate percussive and harmonic elements in a piece
 sr = None  # Resampling rate for songs, set to None to disable
 x_axis = 'time'  # X Axis unit for graphs
 y_axis = 'log'  # Y Axis unit for graphs, e.g. 'hz' or 'log'
-window_size = 1024
-hop_length = 512
+window_size = 8096
+hop_length = 100
+
+# Constants for the program (mostly placeholders for reading)
+BG = 'background'
+BAR = 'bar'
+BAR_FLOOR = 300
+AUDIO_FILE_EXTENSION = ".wav"
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+
+# Selected Color Palette
+color = {BG: WHITE, BAR: RED}
 
 # Program Defaults
 FILE_DELIM = None
@@ -66,9 +75,14 @@ class AudioBar:
 
 
 def visualize_song(song_name):
-    pygame.init()
-    print("Loading Song: " + song_name)
-    global sr
+    # Define Global Vars
+    global sr, force_quit
+
+    # Fill the background & set title
+    screen.fill(color[BG])
+    pygame.display.set_caption(song_name)
+
+    # Load song using global sample rate
     x, sr = librosa.load(os.path.join(INPUT_DIRECTORY, song_name), sr=sr)
 
     # === Retrieve Features Used for Visualizer ===
@@ -79,15 +93,14 @@ def visualize_song(song_name):
     spectrogram = librosa.amplitude_to_db(out, ref=numpy.max)
 
     # TODO: Incorporate these into color/shape/size and create different "styles" or "modes"
-    spectral_centroid = librosa.feature.spectral_centroid(x, sr=sr)
-    spectral_rolloff = librosa.feature.spectral_rolloff(x, sr=sr)
     zero_crossing_rate = librosa.feature.zero_crossing_rate(x)
     bpm = librosa.beat.tempo(x, sr=sr)[0]
 
     frequencies = librosa.core.fft_frequencies(n_fft=window_size)
 
-    # getting an array of time periodic
-    times = librosa.core.frames_to_time(numpy.arange(spectrogram.shape[1]), sr=sr, hop_length=hop_length, n_fft=window_size)
+    # Get as an array over time
+    times = librosa.core.frames_to_time(numpy.arange(spectrogram.shape[1]), sr=sr, hop_length=hop_length,
+                                        n_fft=window_size)
 
     time_index_ratio = len(times) / times[len(times) - 1]
 
@@ -96,62 +109,76 @@ def visualize_song(song_name):
     def get_decibel(target_time, freq):
         return spectrogram[int(freq * frequencies_index_ratio)][int(target_time * time_index_ratio)]
 
-    infoObject = pygame.display.Info()
-
-    screen_w = int(infoObject.current_w / 2.5)
-    screen_h = int(infoObject.current_w / 2.5)
-
-    # Set up the drawing window
-    screen = pygame.display.set_mode([screen_w, screen_h])
-
     bars = []
 
-    frequencies = numpy.arange(100, 8000, 100)
-
+    frequencies = numpy.arange(hop_length, window_size, hop_length)
     r = len(frequencies)
 
     width = screen_w / r
 
     x = (screen_w - width * r) / 2
 
-    for c in frequencies:
-        bars.append(AudioBar(x, 300, c, (255, 0, 0), max_height=400, width=width))
+    # Create Frequency Bars
+    for f in frequencies:
+        bars.append(AudioBar(x, BAR_FLOOR, f, color[BAR], max_height=400, width=width))
         x += width
 
+    # PyGame Clock Control
     t = pygame.time.get_ticks()
     getTicksLastFrame = t
 
+    # Play Song
     pygame.mixer.music.load(os.path.join(INPUT_DIRECTORY, song_name))
     pygame.mixer.music.play(0)
 
     # Run until the user asks to quit
-    running = True
-    while running:
+    playing = True
+    while playing:
 
+        # PyGame Clock Control
         t = pygame.time.get_ticks()
         deltaTime = (t - getTicksLastFrame) / 1000.0
         getTicksLastFrame = t
 
-        # Did the user click the window close button?
+        # Check for Window Being Quit
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                playing = False
+                force_quit = True
 
-        # Fill the background with white
-        screen.fill((255, 255, 255))
+        # Fill the background
+        screen.fill(color[BG])
 
+        # Draw Each Bar to Height Given by Change in dB
         for b in bars:
             b.update(deltaTime, get_decibel(pygame.mixer.music.get_pos() / 1000.0, b.freq))
             b.render(screen)
 
-        # Flip the display
+        # Update the display
         pygame.display.flip()
 
-    pygame.quit()
+        # Stop When Song is Completed
+        if not pygame.mixer.music.get_busy():
+            playing = False
 
 
+# Set Up PyFame Window
+pygame.init()
+infoObject = pygame.display.Info()
+screen_w = int(infoObject.current_w / 2.5)
+screen_h = int(infoObject.current_w / 2.5)
+screen = pygame.display.set_mode([screen_w, screen_h])
+
+# Force Quit Setting To Stop Early
+force_quit = False
+
+# Loop Through Input Directory and Visualize .wav Files
 for filename in os.listdir(INPUT_DIRECTORY):
-    if filename.endswith(".wav"):
+    if filename.endswith(AUDIO_FILE_EXTENSION):
         visualize_song(filename)
+        if force_quit:
+            break
     else:
         continue
+
+pygame.quit()
