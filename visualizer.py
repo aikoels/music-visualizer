@@ -6,28 +6,35 @@ import platform
 import pathlib
 
 '''
-2. Zerocrossing/BPM for color changes
-Separate percussive and harmonic elements in a piece
+Visualizer for MUSC4611
+Capstone Group Project
 '''
 
-sr = None  # Resampling rate for songs, set to None to disable
-x_axis = 'time'  # X Axis unit for graphs
-y_axis = 'log'  # Y Axis unit for graphs, e.g. 'hz' or 'log'
-window_size = 8096
+# Parameters for Audio Analysis
+sr = None  # Re-Sampling rate for songs, set to None to disable
+window_size = 8000
 hop_length = 100
 
-# Constants for the program (mostly placeholders for reading)
+# Constants for Readability
 BG = 'background'
-BAR = 'bar'
-BAR_FLOOR = 300
+FG = 'foreground'
 AUDIO_FILE_EXTENSION = ".wav"
+FLOOR = 300  # Offset of Y coordinate for shapes
+
+# Color Codes
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
+SAND = (255, 178, 102)
+RUST = (183, 65, 14)
+
+# Available Color Palettes
+default_palette = {BG: WHITE, FG: RED}
+desert_palette = {BG: SAND, FG: RUST}
 
 # Selected Color Palette
-color = {BG: WHITE, BAR: RED}
+color = default_palette
 
-# Program Defaults
+# File Directory Defaults
 FILE_DELIM = None
 if platform.system() == 'Windows':
     FILE_DELIM = '\\'
@@ -46,12 +53,9 @@ def clamp(min_value, max_value, value):
     return value
 
 
-# TODO: Parameterize over required values to enable different "modes" (color, shape, size, etc)
 class AudioBar:
-    def __init__(self, x, y, freq, color, width=50, min_height=10, max_height=100, min_decibel=-80, max_decibel=0):
+    def __init__(self, x, y, freq, width=50, min_height=10, max_height=100, min_decibel=-80, max_decibel=0):
         self.x, self.y, self.freq = x, y, freq
-
-        self.color = color
 
         self.width, self.min_height, self.max_height = width, min_height, max_height
 
@@ -71,12 +75,12 @@ class AudioBar:
         self.height = clamp(self.min_height, self.max_height, self.height)
 
     def render(self, screen):
-        pygame.draw.rect(screen, self.color, (self.x, self.y + self.max_height - self.height, self.width, self.height))
+        pygame.draw.rect(screen, color[FG], (self.x, self.y + self.max_height - self.height, self.width, self.height))
 
 
 def visualize_song(song_name):
     # Define Global Vars
-    global sr, force_quit
+    global sr, force_quit, color
 
     # Fill the background & set title
     screen.fill(color[BG])
@@ -92,13 +96,10 @@ def visualize_song(song_name):
 
     spectrogram = librosa.amplitude_to_db(out, ref=numpy.max)
 
-    # TODO: Incorporate these into color/shape/size and create different "styles" or "modes"
-    zero_crossing_rate = librosa.feature.zero_crossing_rate(x)
-    bpm = librosa.beat.tempo(x, sr=sr)[0]
-
+    # TODO: Incorporate more features into color/shape/size and create different "styles" or "modes"
     frequencies = librosa.core.fft_frequencies(n_fft=window_size)
 
-    # Get as an array over time
+    # Get spectrogram as an array over time
     times = librosa.core.frames_to_time(numpy.arange(spectrogram.shape[1]), sr=sr, hop_length=hop_length,
                                         n_fft=window_size)
 
@@ -106,11 +107,11 @@ def visualize_song(song_name):
 
     frequencies_index_ratio = len(frequencies) / frequencies[len(frequencies) - 1]
 
+    # Get dB value of a given frequency at a given time from the spectrogram
     def get_decibel(target_time, freq):
         return spectrogram[int(freq * frequencies_index_ratio)][int(target_time * time_index_ratio)]
 
-    bars = []
-
+    # Get array containing values of each bin to draw a bar for
     frequencies = numpy.arange(hop_length, window_size, hop_length)
     r = len(frequencies)
 
@@ -119,8 +120,9 @@ def visualize_song(song_name):
     x = (screen_w - width * r) / 2
 
     # Create Frequency Bars
+    bars = []
     for f in frequencies:
-        bars.append(AudioBar(x, BAR_FLOOR, f, color[BAR], max_height=400, width=width))
+        bars.append(AudioBar(x, FLOOR, f, max_height=400, width=width))
         x += width
 
     # PyGame Clock Control
@@ -131,7 +133,7 @@ def visualize_song(song_name):
     pygame.mixer.music.load(os.path.join(INPUT_DIRECTORY, song_name))
     pygame.mixer.music.play(0)
 
-    # Run until the user asks to quit
+    # Loop to Visualize & Get Input
     playing = True
     while playing:
 
@@ -140,9 +142,15 @@ def visualize_song(song_name):
         deltaTime = (t - getTicksLastFrame) / 1000.0
         getTicksLastFrame = t
 
-        # Check for Window Being Quit
+        # Check for Input
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            # Key Press
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1:  # 1 - Default Color Palette
+                    color = default_palette
+                if event.key == pygame.K_2:  # 2 - Desert Color Palette
+                    color = desert_palette
+            if event.type == pygame.QUIT:  # Closing Window Quits This & Future Songs
                 playing = False
                 force_quit = True
 
@@ -162,23 +170,24 @@ def visualize_song(song_name):
             playing = False
 
 
-# Set Up PyFame Window
-pygame.init()
-infoObject = pygame.display.Info()
-screen_w = int(infoObject.current_w / 2.5)
-screen_h = int(infoObject.current_w / 2.5)
-screen = pygame.display.set_mode([screen_w, screen_h])
+if __name__ == "__main__":
+    # Set Up PyGame Window
+    pygame.init()
+    infoObject = pygame.display.Info()
+    screen_w = int(infoObject.current_w / 2.5)
+    screen_h = int(infoObject.current_w / 2.5)
+    screen = pygame.display.set_mode([screen_w, screen_h])
 
-# Force Quit Setting To Stop Early
-force_quit = False
+    # Force Quit Setting To Stop Early
+    force_quit = False
 
-# Loop Through Input Directory and Visualize .wav Files
-for filename in os.listdir(INPUT_DIRECTORY):
-    if filename.endswith(AUDIO_FILE_EXTENSION):
-        visualize_song(filename)
-        if force_quit:
-            break
-    else:
-        continue
+    # Loop Through Input Directory and Visualize Files
+    for filename in os.listdir(INPUT_DIRECTORY):
+        if filename.endswith(AUDIO_FILE_EXTENSION):
+            visualize_song(filename)
+            if force_quit:  # Quit Early if Window is Closed
+                break
+        else:
+            continue
 
-pygame.quit()
+    pygame.quit()
