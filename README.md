@@ -31,7 +31,7 @@ python3 -m pip install pathlib
 Note: Some packages will be installed by default so the installation command
 may fail, this is fine, run the other commands.
 
-Convert all audio files to .wav format and place them in the `input/` 
+Convert all audio files to 16-bit .wav format and place them in the `input/` 
 directory.
 
 Execute the script: you can do this from an IDE (if you installed
