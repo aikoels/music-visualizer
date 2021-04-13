@@ -26,10 +26,15 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 SAND = (255, 178, 102)
 RUST = (183, 65, 14)
+BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
+PURPLE = (125, 0, 255)
 
 # Available Color Palettes
 default_palette = {BG: WHITE, FG: RED}
 desert_palette = {BG: SAND, FG: RUST}
+blue_white_palette = {BG: WHITE, FG: BLUE}
+purple_white_palette = {BG: WHITE, FG: PURPLE}
 
 # Selected Color Palette
 color = default_palette
@@ -75,7 +80,9 @@ class AudioBar:
         self.height = clamp(self.min_height, self.max_height, self.height)
 
     def render(self, screen):
-        pygame.draw.rect(screen, color[FG], (self.x, self.y + self.max_height - self.height, self.width, self.height))
+        # pygame.draw.rect(screen, color[FG], (self.x, self.y + self.max_height - self.height, self.width, self.height))
+        # Draw small circles that react same way as rectangles for different visual.
+        pygame.draw.circle(screen, color[FG], (self.x, self.y + self.max_height - self.height), self.width)
 
 
 def visualize_song(song_name):
@@ -160,8 +167,14 @@ def visualize_song(song_name):
         screen.fill(color[BG])
 
         # Draw Each Bar to Height Given by Change in dB
+        # Reset color
+        color = blue_white_palette
         for b in bars:
-            b.update(deltaTime, get_decibel(pygame.mixer.music.get_pos() / 1000.0, b.freq))
+            new_dB = get_decibel(pygame.mixer.music.get_pos() / 1000.0, b.freq)
+            # Update color based on amount of freqs 100 Hz or lower (BASS)
+            if b.freq == 100 and new_dB > -30:
+                color = purple_white_palette
+            b.update(deltaTime, new_dB)
             b.render(screen)
 
         # Update the display
