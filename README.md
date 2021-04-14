@@ -44,7 +44,5 @@ A PyGame window should appear with your visualizations.
 ### Using the Visualizer
 Controls:
 - You can quit at any time and skip the rest of the songs by closing the window.
-- You can switch between color profiles using 1 (default) or 2 (desert) while
-the visualizer runs.
-- You can skip to the next song by pressing the `ENTER` key.
+- Press H for controls
 - The current song name will be displayed at the top of the window.

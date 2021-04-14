@@ -23,21 +23,44 @@ FLOOR = 300  # Offset of Y coordinate for shapes
 
 # Color Codes
 WHITE = (255, 255, 255)
-RED = (255, 0, 0)
+RED = (255, 80, 80)
 SAND = (255, 178, 102)
 RUST = (183, 65, 14)
-BLUE = (0, 0, 255)
-GREEN = (0, 255, 0)
-PURPLE = (125, 0, 255)
+BLUE = (80, 80, 255)
+GREEN = (80, 255, 80)
+PURPLE = (125, 80, 255)
 
 # Available Color Palettes
 default_palette = {BG: WHITE, FG: RED}
 desert_palette = {BG: SAND, FG: RUST}
 blue_white_palette = {BG: WHITE, FG: BLUE}
-purple_white_palette = {BG: WHITE, FG: PURPLE}
+purple_white_palette = {BG: SAND, FG: PURPLE}
 
 # Selected Color Palette
 color = default_palette
+
+# Factor to change color by for color effects
+color_change = {RED: .7, GREEN: .9, BLUE: 2}
+color_change_frequency = hop_length
+color_change_db = -12  # A amplitude > than this value causes a color change
+
+
+# Help Menu
+help = '''
+    Welcome to the MUST4611 Music Visualizer!
+    Here are the controls:
+    Number Pad - Change Color Palette (BG/FG)
+        1 - Default (Red/White)
+        2 - Desert (Rust/Sand)
+        3 - Blue/White
+        4 - Purple/White
+    Arrow Keys - Control the Color Shifting Parameters
+        Up - Increase Color Change Frequency Bin by 100
+        Down - Decrease Color Change Frequency Bin by 100
+        Right - Increase Color Change Amplitude by 6db
+        Left - Decrease Color Change Amplitude by 6db
+    C - Print the current color shifting values
+'''
 
 # File Directory Defaults
 FILE_DELIM = None
@@ -87,7 +110,7 @@ class AudioBar:
 
 def visualize_song(song_name):
     # Define Global Vars
-    global sr, force_quit, color
+    global sr, force_quit, color, color_change_frequency, color_change_db
 
     # Fill the background & set title
     screen.fill(color[BG])
@@ -140,6 +163,9 @@ def visualize_song(song_name):
     pygame.mixer.music.load(os.path.join(INPUT_DIRECTORY, song_name))
     pygame.mixer.music.play(0)
 
+    # Save last color for color switching
+    last_foreground = color[FG]
+
     # Loop to Visualize & Get Input
     playing = True
     while playing:
@@ -153,12 +179,32 @@ def visualize_song(song_name):
         for event in pygame.event.get():
             # Key Press
             if event.type == pygame.KEYDOWN:
+                # Basic Functions
                 if event.key == pygame.K_RETURN:  # Skip This Song
                     playing = False
+                if event.key == pygame.K_h:  # H - Print Help
+                    print(help)
+                # Color Variation Control
+                if event.key == pygame.K_UP:  # Up Arrow - Increase Color Change Frequency
+                    color_change_frequency += hop_length
+                elif event.key == pygame.K_DOWN:  # Down Arrow - Decrease Color Change Frequency
+                    color_change_frequency -= hop_length
+                if event.key == pygame.K_LEFT:  # Left Arrow - Decrease Color Change Amplitude
+                    color_change_db -= 6
+                elif event.key == pygame.K_RIGHT:  # Right Arrow - Increase Color Change Amplitude
+                    color_change_db += 6
+                if event.key == pygame.K_c:  # C - Output Color Info
+                    print("Current Frequency: %i\nCurrent DB Cutoff: %i"%(color_change_frequency, color_change_db))
+                # Color Palette Control
                 if event.key == pygame.K_1:  # 1 - Default Color Palette
                     color = default_palette
-                if event.key == pygame.K_2:  # 2 - Desert Color Palette
+                elif event.key == pygame.K_2:  # 2 - Desert Color Palette
                     color = desert_palette
+                elif event.key == pygame.K_3:  # 3 - Blue White Palette
+                    color = blue_white_palette
+                elif event.key == pygame.K_4:  # 4 - Purple White Palette
+                    color = purple_white_palette
+                last_foreground = color[FG]
             if event.type == pygame.QUIT:  # Closing Window Quits This & Future Songs
                 playing = False
                 force_quit = True
@@ -166,19 +212,34 @@ def visualize_song(song_name):
         # Fill the background
         screen.fill(color[BG])
 
-        # Draw Each Bar to Height Given by Change in dB
-        # Reset color
-        color = blue_white_palette
+        # Check if color change is happening in this image
+        for b in bars:
+            db = get_decibel(pygame.mixer.music.get_pos() / 1000.0, b.freq)
+            # Update color based on frequency and amplitude
+            if b.freq == color_change_frequency and db > color_change_db:
+                # Get current color values and change them by the color_change amount
+                red = int(list(color[FG])[0] * color_change[RED])
+                green = int(list(color[FG])[1] * color_change[GREEN])
+                blue = int(list(color[FG])[2] * color_change[BLUE])
+                # Make sure the values are between 0 and 255
+                red = clamp(0, 255, red)
+                green = clamp(0, 255, green)
+                blue = clamp(0, 255, blue)
+                # Change the FG color to the new values
+                color[FG] = (red, green, blue)
+                break
+
+        # Draw bars with correct colors
         for b in bars:
             new_dB = get_decibel(pygame.mixer.music.get_pos() / 1000.0, b.freq)
-            # Update color based on amount of freqs 100 Hz or lower (BASS)
-            if b.freq == 100 and new_dB > -30:
-                color = purple_white_palette
             b.update(deltaTime, new_dB)
             b.render(screen)
 
         # Update the display
         pygame.display.flip()
+
+        # Fix the color in case it changed
+        color[FG] = last_foreground
 
         # Stop When Song is Completed
         if not pygame.mixer.music.get_busy():
@@ -196,6 +257,7 @@ if __name__ == "__main__":
     # Force Quit Setting To Stop Early
     force_quit = False
 
+    print("Welcome to MUST4611 Visualizer, Press H for Help")
     # Loop Through Input Directory and Visualize Files
     for filename in os.listdir(INPUT_DIRECTORY):
         if filename.endswith(AUDIO_FILE_EXTENSION):
