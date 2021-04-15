@@ -257,7 +257,7 @@ if __name__ == "__main__":
     # Force Quit Setting To Stop Early
     force_quit = False
 
-    print("Welcome to MUST4611 Visualizer, Press H for Help")
+    print("Welcome to MUST4611 Visualizer!\nPress H for Help")
     # Loop Through Input Directory and Visualize Files
     for filename in os.listdir(INPUT_DIRECTORY):
         if filename.endswith(AUDIO_FILE_EXTENSION):
