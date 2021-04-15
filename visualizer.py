@@ -210,10 +210,12 @@ def visualize_song(song_name):
                     color_change_frequency += hop_length
                 elif event.key == pygame.K_DOWN:  # Down Arrow - Decrease Color Change Frequency
                     color_change_frequency -= hop_length
+                color_change_frequency = clamp(min(frequencies), max(frequencies), color_change_frequency)
                 if event.key == pygame.K_LEFT:  # Left Arrow - Decrease Color Change Amplitude
                     color_change_db -= 6
                 elif event.key == pygame.K_RIGHT:  # Right Arrow - Increase Color Change Amplitude
                     color_change_db += 6
+                color_change_db = clamp(-60, 0, color_change_db)
                 if event.key == pygame.K_c:  # C - Output Color Info
                     print("Current Frequency: %i\nCurrent DB Cutoff: %i\nCurrent Change Values: Red: %.1f, Green: %.1f, "
                           "Blue %.1f\n" % (color_change_frequency, color_change_db, color_change[RED], color_change[GREEN],
