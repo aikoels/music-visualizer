@@ -18,6 +18,8 @@ hop_length = 100
 # Constants for Readability
 BG = 'background'
 FG = 'foreground'
+CIRCLE = 'circle'
+BAR = 'bar'
 AUDIO_FILE_EXTENSION = ".wav"
 FLOOR = 300  # Offset of Y coordinate for shapes
 
@@ -38,6 +40,8 @@ purple_white_palette = {BG: SAND, FG: PURPLE}
 
 # Selected Color Palette
 color = default_palette
+# Select shapes
+shape = CIRCLE
 
 # Factor to change color by for color effects
 color_change = {RED: .7, GREEN: .9, BLUE: 2}
@@ -109,14 +113,18 @@ class AudioBar:
         self.height = clamp(self.min_height, self.max_height, self.height)
 
     def render(self, screen):
-        # pygame.draw.rect(screen, color[FG], (self.x, self.y + self.max_height - self.height, self.width, self.height))
-        # Draw small circles that react same way as rectangles for different visual.
-        pygame.draw.circle(screen, color[FG], (self.x, self.y + self.max_height - self.height), self.width)
+        #
+        # Draw shapes (either bars or jumping circles)
+        if shape == CIRCLE:
+            pygame.draw.circle(screen, color[FG], (self.x, self.y + self.max_height - self.height), self.width)
+        else:
+            pygame.draw.rect(screen, color[FG],
+                             (self.x, self.y + self.max_height - self.height, self.width, self.height))
 
 
 def visualize_song(song_name):
     # Define Global Vars
-    global sr, force_quit, color, color_change_frequency, color_change_db
+    global sr, force_quit, color, color_change_frequency, color_change_db, shape
 
     # Fill the background & set title
     screen.fill(color[BG])
@@ -190,6 +198,12 @@ def visualize_song(song_name):
                     playing = False
                 if event.key == pygame.K_h:  # H - Print Help
                     print(help)
+                # Shape Control
+                if event.key == pygame.K_s:  # S - Change Shape
+                    if shape == CIRCLE:
+                        shape = BAR
+                    else:
+                        shape = CIRCLE
                 # Color Variation Paramater Control
                 if event.key == pygame.K_UP:  # Up Arrow - Increase Color Change Frequency
                     color_change_frequency += hop_length
