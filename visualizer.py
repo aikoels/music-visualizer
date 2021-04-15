@@ -44,7 +44,6 @@ color_change = {RED: .7, GREEN: .9, BLUE: 2}
 color_change_frequency = hop_length
 color_change_db = -12  # A amplitude > than this value causes a color change
 
-
 # Help Menu
 help = '''
     Welcome to the MUST4611 Music Visualizer!
@@ -54,11 +53,18 @@ help = '''
         2 - Desert (Rust/Sand)
         3 - Blue/White
         4 - Purple/White
+    To change the color shifting values:
     Arrow Keys - Control the Color Shifting Parameters
         Up - Increase Color Change Frequency Bin by 100
         Down - Decrease Color Change Frequency Bin by 100
         Right - Increase Color Change Amplitude by 6db
         Left - Decrease Color Change Amplitude by 6db
+    [ - Decrease red factor change by .1
+    ] - Increase red factor change by .1
+    ; - Decrease green factor change by .1
+    ' - Increase green factor change by .1
+    . - Decrease blue factor change by .1
+    / - Increase blue factor change by .1
     C - Print the current color shifting values
 '''
 
@@ -184,7 +190,7 @@ def visualize_song(song_name):
                     playing = False
                 if event.key == pygame.K_h:  # H - Print Help
                     print(help)
-                # Color Variation Control
+                # Color Variation Paramater Control
                 if event.key == pygame.K_UP:  # Up Arrow - Increase Color Change Frequency
                     color_change_frequency += hop_length
                 elif event.key == pygame.K_DOWN:  # Down Arrow - Decrease Color Change Frequency
@@ -194,7 +200,22 @@ def visualize_song(song_name):
                 elif event.key == pygame.K_RIGHT:  # Right Arrow - Increase Color Change Amplitude
                     color_change_db += 6
                 if event.key == pygame.K_c:  # C - Output Color Info
-                    print("Current Frequency: %i\nCurrent DB Cutoff: %i"%(color_change_frequency, color_change_db))
+                    print("Current Frequency: %i\nCurrent DB Cutoff: %i\nCurrent Change Values: Red: %.1f, Green: %.1f, "
+                          "Blue %.1f\n" % (color_change_frequency, color_change_db, color_change[RED], color_change[GREEN],
+                                       color_change[BLUE]))
+                # Color Variation Amount Control
+                if event.key == pygame.K_LEFTBRACKET:  # [ - Increase Red Change Factor
+                    color_change[RED] -= .1
+                elif event.key == pygame.K_RIGHTBRACKET:  # ] - Decrease Red Change Factor
+                    color_change[RED] += .1
+                if event.key == pygame.K_SEMICOLON:  # ; - Decrease Green Change Factor
+                    color_change[GREEN] -= .1
+                elif event.key == pygame.K_QUOTE:  # ' - Increase Green Change Factor
+                    color_change[GREEN] += .1
+                if event.key == pygame.K_PERIOD:  # . - Decrease Blue Change Factor
+                    color_change[BLUE] -= .1
+                elif event.key == pygame.K_SLASH:  # / - Increase Blue Change Factor
+                    color_change[BLUE] += .1
                 # Color Palette Control
                 if event.key == pygame.K_1:  # 1 - Default Color Palette
                     color = default_palette
@@ -257,7 +278,7 @@ if __name__ == "__main__":
     # Force Quit Setting To Stop Early
     force_quit = False
 
-    print("Welcome to MUST4611 Visualizer!\nPress H for Help")
+    print("Welcome to MUST4611 Visualizer!\nPress H for Help\n")
     # Loop Through Input Directory and Visualize Files
     for filename in os.listdir(INPUT_DIRECTORY):
         if filename.endswith(AUDIO_FILE_EXTENSION):
