@@ -70,6 +70,7 @@ help = '''
     . - Decrease blue factor change by .1
     / - Increase blue factor change by .1
     C - Print the current color shifting values
+    S - Rotate between available shapes
 '''
 
 # File Directory Defaults
