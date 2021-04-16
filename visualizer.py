@@ -38,6 +38,8 @@ desert_palette = {BG: SAND, FG: RUST}
 blue_white_palette = {BG: WHITE, FG: BLUE}
 purple_white_palette = {BG: SAND, FG: PURPLE}
 
+# TODO: Add Color Gradient Based on Frequencies (Closer to White @ High Frequencies)
+
 # Selected Color Palette
 color = default_palette
 # Select shapes
@@ -52,7 +54,9 @@ color_change_db = -12  # A amplitude > than this value causes a color change
 help = '''
     Welcome to the MUST4611 Music Visualizer!
     Here are the controls:
-    Number Pad - Change Color Palette (BG/FG)
+    Enter - Skip Song
+    S - Rotate between available shapes
+    Number Keys - Change Color Palette (BG/FG)
         1 - Default (Red/White)
         2 - Desert (Rust/Sand)
         3 - Blue/White
@@ -70,7 +74,6 @@ help = '''
     . - Decrease blue factor change by .1
     / - Increase blue factor change by .1
     C - Print the current color shifting values
-    S - Rotate between available shapes
 '''
 
 # File Directory Defaults
@@ -141,7 +144,6 @@ def visualize_song(song_name):
 
     spectrogram = librosa.amplitude_to_db(out, ref=numpy.max)
 
-    # TODO: Incorporate more features into color/shape/size and create different "styles" or "modes"
     frequencies = librosa.core.fft_frequencies(n_fft=window_size)
 
     # Get spectrogram as an array over time
@@ -195,7 +197,7 @@ def visualize_song(song_name):
             # Key Press
             if event.type == pygame.KEYDOWN:
                 # Basic Functions
-                if event.key == pygame.K_RETURN:  # Skip This Song
+                if event.key == pygame.K_RETURN:  # Enter - Skip This Song
                     playing = False
                 if event.key == pygame.K_h:  # H - Print Help
                     print(help)
