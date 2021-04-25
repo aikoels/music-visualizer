@@ -41,8 +41,6 @@ desert_palette = {BG: SAND, FG: RUST}
 blue_white_palette = {BG: WHITE, FG: BLUE}
 purple_white_palette = {BG: SAND, FG: PURPLE}
 
-# TODO: Add Color Gradient Based on Frequencies (Closer to White @ High Frequencies)
-
 # Selected Color Palette
 color = default_palette
 # Select shapes
@@ -222,9 +220,11 @@ def visualize_song(song_name):
                     color_change_db += 6
                 color_change_db = clamp(-60, 0, color_change_db)
                 if event.key == pygame.K_c:  # C - Output Color Info
-                    print("Current Frequency: %i\nCurrent DB Cutoff: %i\nCurrent Change Values: Red: %.1f, Green: %.1f, "
-                          "Blue %.1f\n" % (color_change_frequency, color_change_db, color_change[RED], color_change[GREEN],
-                                       color_change[BLUE]))
+                    print(
+                        "Current Frequency: %i\nCurrent DB Cutoff: %i\nCurrent Change Values: Red: %.1f, Green: %.1f, "
+                        "Blue %.1f\n" % (
+                            color_change_frequency, color_change_db, color_change[RED], color_change[GREEN],
+                            color_change[BLUE]))
                 # Color Variation Amount Control
                 if event.key == pygame.K_LEFTBRACKET:  # [ - Increase Red Change Factor
                     color_change[RED] -= .1
