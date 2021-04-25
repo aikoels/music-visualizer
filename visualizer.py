@@ -61,7 +61,7 @@ help = '''
         1 - Default (Red/White)
         2 - Desert (Rust/Sand)
         3 - Ocean (Blue/White)
-        4 - Geode (Purple/White)
+        4 - Geode (Purple/Sand)
     To change the color shifting values:
     Arrow Keys - Control the Color Shifting Parameters
         Up - Increase Color Change Frequency Bin by 100
