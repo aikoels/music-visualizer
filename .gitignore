@@ -1,2 +1,3 @@
 .idea/*
 input/*.wav
+input/**/*.wav
