@@ -14,11 +14,9 @@ work on Mac or Unix.
 
 Requirements:
 - [Python 3.6.2+](https://www.python.org/downloads/)
+- Python Libraries: librosa, numpy, pygame, os, platform, pathlib.
 
-After installing Python, ensure the following packages are 
-installed: librosa, numpy, pygame, os, platform, pathlib.
-
-You can do this with an IDE or using your command line 
+To install the python libraries using your command line 
 or terminal:
 ```bash
 python3 -m pip install librosa
@@ -31,17 +29,17 @@ python3 -m pip install pathlib
 Note: Some packages will be installed by default so the installation command
 may fail, this is fine, run the other commands.
 
-Convert all audio files to 16-bit .wav format and place them in the `input/` 
+### Using the Visualizer
+Convert all audio files to .wav format (16-bit) and place them in the `input/` 
 directory.
 
-Execute the script: you can do this from an IDE (if you installed
-the packages through one) or by command line or terminal. Simply
-navigate to the directory containing the script and input 
-folder, and run: `python3 visualizer.py` 
+Execute the script:  you can do this by navigating to the directory containing the script and 
+input directory in a terminal or command prompt and running `python3 visualizer.py` 
 
-A PyGame window should appear with your visualizations.
+A PyGame window should appear with your visualizations, 
+you can change the window size by editing the `screen_width` and 
+`screen_height` variables in the `visualizer.py` script. 
 
-### Using the Visualizer
 Controls:
 - You can quit at any time and skip the rest of the songs by closing the window.
 - Press H for controls
