@@ -9,6 +9,9 @@ import pathlib
 Visualizer for MUSC4611
 Capstone Group Project
 '''
+# Parameters for Window Size
+screen_width = 1280
+screen_height = 720
 
 # Parameters for Audio Analysis
 sr = None  # Re-Sampling rate for songs, set to None to disable
@@ -162,9 +165,9 @@ def visualize_song(song_name):
     frequencies = numpy.arange(hop_length, window_size, hop_length)
     r = len(frequencies)
 
-    width = screen_w / r
+    width = screen_width / r
 
-    x = (screen_w - width * r) / 2
+    x = (screen_width - width * r) / 2
 
     # Create Frequency Bars
     bars = []
@@ -289,10 +292,7 @@ def visualize_song(song_name):
 if __name__ == "__main__":
     # Set Up PyGame Window
     pygame.init()
-    infoObject = pygame.display.Info()
-    screen_w = int(infoObject.current_w / 2.5)
-    screen_h = int(infoObject.current_w / 2.5)
-    screen = pygame.display.set_mode([screen_w, screen_h])
+    screen = pygame.display.set_mode([screen_width, screen_height])
 
     # Force Quit Setting To Stop Early
     force_quit = False
